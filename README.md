@@ -1,12 +1,10 @@
 # Rester
 
-
 ![master build test result](https://api.travis-ci.org/Iceyer/rester.svg?branch=master)
 
 Rester is an micro rest api request lib. The base design is from [restit](https://github.com/yookoala/restit).
 
 ## Dependencies
-
 
 ## Example
 
@@ -20,7 +18,8 @@ type User struct {
 }
 
 func main() {
-    restAPI := rester.Rest("User", "https://api.example.org/v1/users")
+    apiURL = "https://api.iceyer.org/v0/test"
+    restAPI := rester.Rest("User", apiURL)
 
     user := User{Name: "Iceyer", Email: "me@iceyer.net"}
     newUser := User{}
