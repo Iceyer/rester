@@ -2,7 +2,6 @@ package rester
 
 import (
 	"net/http"
-	"net/url"
 
 	"github.com/jmcvetta/napping"
 )
@@ -16,18 +15,15 @@ func Rest(name string, url string) *Rester {
 	}
 }
 
-//Session is the wrapper of napping.Session
+//Session is the wrapper of napping.Session.
 type Session interface {
 	Send(r *napping.Request) (*napping.Response, error)
 }
 
 //Rester is a instance to keep http info.
 type Rester struct {
-	name string
-
-	apiURL  string
-	headers http.Header
-	params  url.Values
+	name   string
+	apiURL string
 
 	payload interface{}
 	err     interface{}
@@ -35,46 +31,63 @@ type Rester struct {
 	session Session
 }
 
-//Request implement a simple interface for rest request
-type Request struct {
-	napping.Request
-	session Session
-	err     interface{}
-}
-
-// Create will return a new post request
-func (r *Rester) Create(payload interface{}) *Request {
+func (r *Rester) defaultRequest() *Request {
 	return &Request{
 		Request: napping.Request{
-			Url:     r.apiURL,
-			Method:  "POST",
-			Payload: r.payload,
-			Header:  &http.Header{},
+			Header: &http.Header{},
+			Error:  r.err,
 		},
 		session: r.session,
 	}
 }
 
-//AddHeader will add a header params to request.
-func (r *Request) AddHeader(key, value string) *Request {
-	r.Header.Add(key, value)
-	return r
+// Create will return a new post request.
+func (r *Rester) Create(payload interface{}) *Request {
+	req := r.defaultRequest()
+	req.Method = "POST"
+	req.Url = r.apiURL
+	req.Payload = payload
+	return req
 }
 
-//WithParams add query string params
-func (r *Request) WithParams(p *url.Values) *Request {
-	r.Params = p
-	return r
+// Retrieve object with the id.
+func (r *Rester) Retrieve(id string) *Request {
+	req := r.defaultRequest()
+	req.Method = "GET"
+	req.Url = r.apiURL + "/" + id
+	return req
 }
 
-//WithPayloadAs set the body struct
-func (r *Request) WithPayloadAs(payload interface{}) *Request {
-	r.Result = payload
-	return r
+// List all object of special path, notice that / is the relative root and
+// empty is the root path. Howerver, this request should return an array.
+func (r *Rester) List(path string) *Request {
+	req := r.defaultRequest()
+	req.Method = "GET"
+	req.Url = r.apiURL + path
+	return req
 }
 
-//Go send the request
-func (r *Request) Go() (*napping.Response, error) {
-	rsp, _ := r.session.Send(&r.Request)
-	return rsp, nil
+// Update something of the id with the payload
+func (r *Rester) Update(id string, payload interface{}) *Request {
+	req := r.defaultRequest()
+	req.Method = "PUT"
+	req.Url = r.apiURL + "/" + id
+	req.Payload = payload
+	return req
+}
+
+// Delete object with the id.
+func (r *Rester) Delete(id string) *Request {
+	req := r.defaultRequest()
+	req.Method = "DELETE"
+	req.Url = r.apiURL + "/" + id
+	return req
+}
+
+// Remove objects under path. Notice that "" and "/" is not the same Url.
+func (r *Rester) Remove(path string) *Request {
+	req := r.defaultRequest()
+	req.Method = "DELETE"
+	req.Url = r.apiURL + path
+	return req
 }

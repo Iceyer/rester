@@ -1,5 +1,8 @@
 # Rester
 
+
+![master build test result](https://api.travis-ci.org/Iceyer/rester.svg?branch=master)
+
 Rester is an micro rest api request lib. The base design is from [restit](https://github.com/yookoala/restit).
 
 ## Dependencies
@@ -23,12 +26,13 @@ func main() {
     newUser := User{}
     req := restAPI.Create(&user).
         AddHeader("Access-Token", token).
-        WithPayloadAs(&newUser)
+        WithResponeAs(&newUser)
 
     result, err := req.Go()
     if nil != err {
         fmt.Println("Create User Failed")
     }
+    fmt.Println("Request Status:", result.Status())
     fmt.Println("Create New User:", newUser)
 }
 
